@@ -17,17 +17,23 @@ const mensajes = [];
 io.on("connection", (socket) => {
   console.log("Usuario conectado: " + socket.id);
 
-  socket.emit("message", ["¡Bienvenido al chat!"]);
+  socket.emit("message", mensajes);
 
   socket.on("message", (msg) => {
 
-    mensajes.push(msg);
+    const mensajeConHora = {
+      ...msg,
+      hora: new Date().toISOString()
+    };
+
+    mensajes.push(mensajeConHora);
     //io.emit => Envia a todos los clientes, incluido uno mismo
     // socket.broadcast.emit => Envia a todos los clientes, excepto uno mismo
     //socket.emit => Envia solo al cliente conectado
 
     socket.emit("Confirmation", "Mensaje enviado");
-    socket.broadcast.emit("message", mensajes);
+    io.emit("message", mensajes);
+
   });
 });
 

@@ -5,15 +5,18 @@ function App() {
   const[socket, setSocket] = useState()
   const[inputMessage, setInputMessage] = useState()
   const[mensajesRecibidos, setMensajeRecibido] = useState([])
+  const[user, setUser]= useState("")
 
   //Actualizar el estado del socket cada vez que se conecta o desconecta
   useEffect(() => {
-    const newSocket = io('localhost:3000')
+    const newSocket = io('http://192.168.18.161:3000/')
     setSocket(newSocket)
 
     newSocket.on('message', (msg) => {
       setMensajeRecibido(msg)
     })
+
+    setUser(prompt("Ingrese su nombre"))
 
     return () => {
       newSocket.disconnect()
@@ -25,8 +28,15 @@ function App() {
     //Enviar el mensaje al servidor a través del socket
     e.preventDefault()
     if(socket) {
-      socket.emit('message', inputMessage)
+      socket.emit('message', {user, inputMessage})
     }
+  }
+
+  const formatearHora = (hora) => {
+    return new Date(hora).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
   }
 
   return (
@@ -39,7 +49,12 @@ function App() {
       </form>
       <ul>
         {
-        mensajesRecibidos.map(mensaje => <li>{mensaje}</li>)
+          //mensaje = {user: "PEPE", inputMessage: "Hola"}
+        mensajesRecibidos.map((mensaje, index) => (
+          <li key={index}>
+            {mensaje.user}: {mensaje.inputMessage} - {formatearHora(mensaje.hora)}
+          </li>
+        ))
         }
       </ul>
     </div>
